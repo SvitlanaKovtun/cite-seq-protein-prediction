@@ -49,7 +49,8 @@ Several properties of CITE-seq data make RNA → protein prediction non-trivial:
 
 - **RNA-derived features**
   - Target-specific relevant genes (BioLegend TotalSeq annotations), kept uncompressed
-  - Remaining transcriptome standardized and compressed using PCA
+  - Remaining transcriptome standardized and compressed using PCA (used here as a regularization and compression step for machine-learning models, not for biological interpretation. RNA features are standardized prior to PCA to avoid dominance by high-variance genes and to improve stability and generalization across donors).
+
   - Final RNA feature block:  
     `[relevant genes] + [PCA components]`
 
