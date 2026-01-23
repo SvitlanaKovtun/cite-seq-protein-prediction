@@ -41,7 +41,7 @@ Several properties of CITE-seq data make RNA → protein prediction non-trivial:
 - Cell metadata  
   - donor  
   - cell type  
-  - day  
+  - day retained as a proxy for biological differentiation state, distinct from technical batch effects.  
 
 ---
 
@@ -66,7 +66,7 @@ Several properties of CITE-seq data make RNA → protein prediction non-trivial:
 
 ### 3. Modeling
 
-- Single **global XGBoost regression model**
+- Single **global XGBoost regression model** configured with deep trees (depth 6) to capture non-linear interactions, balanced by strong L2 regularization (lambda 15) to reject donor-specific noise.
 - All cell types are merged after empirical evaluation showed that cell-type–specific models underperformed
 - Multi-protein prediction handled explicitly
 
@@ -75,8 +75,9 @@ Several properties of CITE-seq data make RNA → protein prediction non-trivial:
 ### 4. Hyperparameter tuning
 
 - A subset of **representative protein targets** is selected:
-  - stratified by variance (low / mid / high)
-  - stratified by difficulty (hard / medium / easy, based on prior R²)
+  - stratified by difficulty to predict (hard / easy) based on column-wise Pearson correlation,
+  - and signal strength (low / high variance)
+  - Manual biological overrides: Specific targets (e.g., Isotype controls, rare cell markers) forced into the tuning set to prevent overfitting to dominant cell types.
 
 - Hyperparameters are tuned using **donor-held-out validation**
   - one donor fully excluded from training
@@ -96,8 +97,6 @@ Several properties of CITE-seq data make RNA → protein prediction non-trivial:
 
 After selecting hyperparameters using donor-held-out validation, a final model is trained on **all available labeled cells**:
 
-- `X_full = concat(train, validation)`
-- `y_full = concat(train, validation)`
 
 The refit model is then used to generate predictions for the evaluation/test set.
 
